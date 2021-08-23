@@ -1,0 +1,52 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://Planet.tscn" type="PackedScene" id=1]
+[ext_resource path="res://gwj34_hubworld_background.jpg" type="Texture" id=2]
+
+[sub_resource type="PanoramaSky" id=2]
+panorama = ExtResource( 2 )
+
+[sub_resource type="Environment" id=3]
+background_mode = 2
+background_sky = SubResource( 2 )
+background_energy = 12.82
+glow_enabled = true
+
+[sub_resource type="GIProbeData" id=4]
+bounds = AABB( -4, -4, -4, 8, 8, 8 )
+cell_size = 0.0625
+to_cell_xform = Transform( 16, 0, 0, 0, 16, 0, 0, 0, 16, 64, 64, 64 )
+dynamic_data = PoolIntArray( 0, 8, 128, 128, 128, 1, 0, 1065353216, 0, 0, 1065353216, 0, 0, 1065353216, 0, 0, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 8355711, 0 )
+dynamic_range = 4
+bias = 1.5
+normal_bias = 0.0
+propagation = 0.7
+
+[node name="WorldScene" type="Spatial"]
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( -0.55868, -0.362957, -0.745747, 0.0625954, -0.915046, 0.398462, -0.827018, 0.175932, 0.533938, 0, 3.81005, 0 )
+light_energy = 1.28
+shadow_enabled = true
+
+[node name="CameraPivot" type="Spatial" parent="."]
+
+[node name="Camera" type="Camera" parent="CameraPivot"]
+transform = Transform( 1, 0, 0, 0, 0.961319, 0.275436, 0, -0.275436, 0.961319, 0, 1.72127, 3 )
+far = 1000.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( 3 )
+
+[node name="GIProbe" type="GIProbe" parent="."]
+extents = Vector3( 4, 4, 4 )
+data = SubResource( 4 )
+
+[node name="Planet" parent="." instance=ExtResource( 1 )]
+resolution = 64
+_seed = 76
+_octaves = 8
+_period = 1.0
+_persistance = 0.6
+_lacunarity = 2.0
+_noise_strength = 0.5
