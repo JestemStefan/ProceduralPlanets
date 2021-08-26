@@ -1,0 +1,37 @@
+[gd_scene load_steps=5 format=2]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type spatial;
+
+uniform sampler2D noise3D;
+
+void vertex()
+{
+	VERTEX = normalize(VERTEX);
+	NORMAL = VERTEX;
+	VERTEX += NORMAL;
+}"
+
+[sub_resource type="Texture3D" id=2]
+data = {
+"depth": 0,
+"flags": 4,
+"format": 37,
+"height": 0,
+"layers": [  ],
+"width": 0
+}
+
+[sub_resource type="ShaderMaterial" id=3]
+shader = SubResource( 1 )
+shader_param/noise3D = SubResource( 2 )
+
+[sub_resource type="CubeMesh" id=4]
+material = SubResource( 3 )
+subdivide_width = 256
+subdivide_height = 256
+subdivide_depth = 256
+
+[node name="PlanetWithShader" type="MeshInstance"]
+mesh = SubResource( 4 )
+material/0 = null
