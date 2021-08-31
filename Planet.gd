@@ -1,7 +1,7 @@
 tool
 extends Spatial
 
-export var resolution: int = 2 setget set_resolution, get_resolution
+export(int, 1, 5, 1) var _resolution= 2 setget set_resolution, get_resolution
 export var _seed: int = 123456789 setget set_seed
 export(int, 1, 64, 1) var _octaves = 4 setget set_octaves
 export var _period: float = 1 setget set_period
@@ -14,6 +14,7 @@ var arr_mesh_save: ArrayMesh = ArrayMesh.new()
 var mdt: MeshDataTool = MeshDataTool.new()
 var st: SurfaceTool = SurfaceTool.new()
 var ground_noise: OpenSimplexNoise = OpenSimplexNoise.new()
+var hill_noise: OpenSimplexNoise = OpenSimplexNoise.new()
 
 export var surface_colors: Gradient
 
@@ -24,15 +25,15 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	rotate_y(delta * 0.01)
+	rotate_y(delta * 0.05)
 
 
 func make_new_mesh():
 	var new_mesh: CubeMesh = CubeMesh.new()
 	
-	new_mesh.subdivide_depth = resolution
-	new_mesh.subdivide_height = resolution
-	new_mesh.subdivide_width = resolution
+	new_mesh.subdivide_depth = 32 * _resolution
+	new_mesh.subdivide_height = 32 * _resolution
+	new_mesh.subdivide_width = 32 * _resolution
 	
 	arr_mesh_save.surface_remove(0)
 	arr_mesh_save.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, new_mesh.get_mesh_arrays())
@@ -45,6 +46,12 @@ func generate_sphere_mesh():
 	ground_noise.period = _period
 	ground_noise.persistence = _persistance
 	ground_noise.lacunarity = _lacunarity
+	
+	hill_noise.seed = _seed + 1
+	hill_noise.octaves = 8
+	hill_noise.period = 0.6
+	hill_noise.persistence = 0.5
+	hill_noise.lacunarity = 0.1
 	
 	var array_mesh: ArrayMesh = ArrayMesh.new()
 	array_mesh = arr_mesh_save.duplicate()
@@ -111,10 +118,13 @@ func threaded_update_mesh(start_stop: Array):
 		vertex = vertex.normalized()
 		mdt.set_vertex_normal(i, vertex)
 		
-		var elevation: float = ground_noise.get_noise_3dv(vertex)
+		
+		var hill_elevation: float = 1 - abs(sin(hill_noise.get_noise_3dv(vertex) * PI))
+		var elevation: float = ground_noise.get_noise_3dv(vertex) 
+		elevation += hill_elevation * elevation * 0.5
 		elevation = sign(elevation) * pow(elevation, 2)
 		
-		var point_on_gradient: float = range_lerp(elevation, -0.25, 0.25, 0, 1)
+		var point_on_gradient: float = range_lerp(elevation, -0.4, 0.4, 0, 1)
 		mdt.set_vertex_color(i, surface_colors.interpolate(point_on_gradient))
 		
 		if elevation >= 0:
@@ -132,11 +142,11 @@ func threaded_update_mesh(start_stop: Array):
 
 
 func get_resolution():
-	return resolution
+	return _resolution
 	
 func set_resolution(res):
-	if res != resolution:
-		resolution = res
+	if res != _resolution:
+		_resolution = res
 		make_new_mesh()
 		generate_sphere_mesh()
 
